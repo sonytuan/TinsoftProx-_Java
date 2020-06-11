@@ -1,3 +1,5 @@
+
+
 TinsoftProxy myProxy;
 // main action
 
