@@ -41,7 +41,7 @@ public class TinsoftProxy {
         if(checkLastRequest()) {
             try {
                 String rs = loadUrl(serverDomain + "/api/changeProxy.php?key=" + api_key + "&location=" + location);
-                if (rs != "") {
+                if (!Objects.equals(rs, "")) {
                     JSONObject jObject = new JSONObject(rs);
                     if (jObject.getBoolean("success")) {
                         this.proxy = jObject.getString("proxy");
