@@ -11,19 +11,19 @@ import java.util.Objects;
 @Data
 public class TinsoftProxy {
     private  String proxy ;
-    private  String api_key;
+    private  String apiKey;
     private  int location;
-    private  int next_change;
+    private  int nextChange;
     private  int timeout;
     private  Boolean isGetIPSuccess;
     private  String error;
     private final String serverDomain ="http://proxy.tinsoftsv.com";
     private double lastRequest=0;
 
-    public TinsoftProxy(String api_key,int location){
-        this.api_key = api_key;
+    public TinsoftProxy(String apiKey,int location){
+        this.apiKey = apiKey;
         this.location = location;
-        this.next_change=0;
+        this.nextChange =0;
         this.timeout=0;
         this.isGetIPSuccess =false;
         this.error="";
@@ -33,30 +33,24 @@ public class TinsoftProxy {
         this(apiKey, 0);
     }
 
-    public void changeIP(){
-        this.next_change = 0;
+    public void initData(){
+        this.nextChange = 0;
         this.timeout = 0;
         this.isGetIPSuccess = false;
         this.error = "";
+    }
+
+    public void changeIP(){
+        initData();
         if(checkLastRequest()) {
             try {
-                String rs = loadUrl(serverDomain + "/api/changeProxy.php?key=" + api_key + "&location=" + location);
+                String rs = loadUrl(serverDomain + "/api/changeProxy.php?key=" + apiKey + "&location=" + location);
                 if (!Objects.equals(rs, "")) {
                     JSONObject jObject = new JSONObject(rs);
-                    if (jObject.getBoolean("success")) {
-                        this.proxy = jObject.getString("proxy");
-                        this.next_change = jObject.getInt("next_change");
-                        this.timeout = jObject.getInt("timeout");
-                        this.isGetIPSuccess = true;
-                    } else {
-                        this.error = jObject.getString("description");
-                    }
-
+                    setData(jObject);
                 } else {
                     this.error = "Request server timeout!";
                 }
-
-
             } catch (Exception e) {
                 this.error = "Request server timeout!";
             }
@@ -66,30 +60,16 @@ public class TinsoftProxy {
         }
     }
     public void getCurrentIP(){
-
-        this.next_change = 0;
-        this.timeout = 0;
-        this.isGetIPSuccess = false;
-        this.error = "";
+        initData();
         if(checkLastRequest()) {
             try {
-                String rs = loadUrl(serverDomain + "/api/getProxy.php?key=" + api_key);
+                String rs = loadUrl(serverDomain + "/api/getProxy.php?key=" + apiKey);
                 if (!Objects.equals(rs, "")) {
                     JSONObject jObject = new JSONObject(rs);
-                    if (jObject.getBoolean("success")) {
-                        this.proxy = jObject.getString("proxy");
-                        this.next_change = jObject.getInt("next_change");
-                        this.timeout = jObject.getInt("timeout");
-                        this.isGetIPSuccess = true;
-                    } else {
-                        this.error = jObject.getString("description");
-                    }
-
+                    setData(jObject);
                 } else {
                     this.error = "Request server timeout!";
                 }
-
-
             } catch (Exception e) {
                 this.error = "Request server timeout!";
             }
@@ -98,9 +78,21 @@ public class TinsoftProxy {
             this.isGetIPSuccess = false;
         }
     }
+
+    public void setData(JSONObject jObject){
+        if (jObject.getBoolean("success")) {
+            this.proxy = jObject.getString("proxy");
+            this.nextChange = jObject.getInt("next_change");
+            this.timeout = jObject.getInt("timeout");
+            this.isGetIPSuccess = true;
+        } else {
+            this.error = jObject.getString("description");
+        }
+    }
+
     private  boolean checkLastRequest(){
         double now = System.currentTimeMillis();
-        if((now-this.lastRequest)>=10000){
+        if((now-this.lastRequest) >= 10000){
             this.lastRequest = now;
             return  true;
         }else {
@@ -122,6 +114,4 @@ public class TinsoftProxy {
         result = response.body();
         return  result;
     }
-
-
 }
