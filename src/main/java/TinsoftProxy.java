@@ -10,13 +10,13 @@ import java.util.Objects;
 
 @Data
 public class TinsoftProxy {
-    public  String proxy ;
-    public  String api_key;
-    public  int location;
-    public  int next_change;
-    public  int timeout;
-    public  Boolean isGetIPSuccess;
-    public  String error;
+    private  String proxy ;
+    private  String api_key;
+    private  int location;
+    private  int next_change;
+    private  int timeout;
+    private  Boolean isGetIPSuccess;
+    private  String error;
     private final String serverDomain ="http://proxy.tinsoftsv.com";
     private double lastRequest=0;
 
