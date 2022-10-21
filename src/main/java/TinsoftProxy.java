@@ -1,8 +1,14 @@
-package com.tinsoft.proxy;
+import lombok.Data;
 import org.json.JSONObject;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Objects;
+
+@Data
 public class TinsoftProxy {
     public  String proxy ;
     public  String api_key;
@@ -11,7 +17,7 @@ public class TinsoftProxy {
     public  int timeout;
     public  Boolean isGetIPSuccess;
     public  String error;
-    private String serverDomain ="http://proxy.tinsoftsv.com";
+    private final String serverDomain ="http://proxy.tinsoftsv.com";
     private double lastRequest=0;
 
     public TinsoftProxy(String api_key,int location){
@@ -22,8 +28,12 @@ public class TinsoftProxy {
         this.isGetIPSuccess =false;
         this.error="";
     }
-    public void changeIP(){
 
+    public TinsoftProxy(String apiKey){
+        this(apiKey, 0);
+    }
+
+    public void changeIP(){
         this.next_change = 0;
         this.timeout = 0;
         this.isGetIPSuccess = false;
@@ -55,7 +65,7 @@ public class TinsoftProxy {
             this.isGetIPSuccess = false;
         }
     }
-    public void getCurentIP(){
+    public void getCurrentIP(){
 
         this.next_change = 0;
         this.timeout = 0;
@@ -64,7 +74,7 @@ public class TinsoftProxy {
         if(checkLastRequest()) {
             try {
                 String rs = loadUrl(serverDomain + "/api/getProxy.php?key=" + api_key);
-                if (rs != "") {
+                if (!Objects.equals(rs, "")) {
                     JSONObject jObject = new JSONObject(rs);
                     if (jObject.getBoolean("success")) {
                         this.proxy = jObject.getString("proxy");
@@ -98,12 +108,18 @@ public class TinsoftProxy {
         }
 
     }
-    private String loadUrl(String api_url) throws IOException, ExecutionException, InterruptedException {
-        String myUrl = api_url;
+    private String loadUrl(String apiUrl) throws IOException, InterruptedException {
         String result;
-        HttpGetRequest getRequest = new HttpGetRequest();
-        result = getRequest.execute(myUrl).get();
-        //System.out.println(result);
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .setHeader("Accept", "application/json")
+                .setHeader("Content-type", "application/json")
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        result = response.body();
         return  result;
     }
 
